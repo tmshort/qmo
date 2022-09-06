@@ -5,15 +5,20 @@ from typing import List, Any
 import json
 from natsort import natsorted
 import threading
+import time
+import rtmidi
+import mymidi
 
 dispatcher = Dispatcher()
 server = None
 client = None
 
 lights = dict()
+light_update = 0
 
 def accept_anything(address: str, *osc_args: List[Any]) -> None:
     global lights
+    global light_update
     if address[-17:] == "/lightCommandText":
         for i in osc_args:
             d = json.loads(i)
@@ -23,6 +28,7 @@ def accept_anything(address: str, *osc_args: List[Any]) -> None:
                 if j[1] == 'home':
                     j[1] = 0
                 lights[j[0]] = int(j[1])
+        light_update = light_update + 1
 
 dispatcher.set_default_handler(accept_anything)
 
@@ -46,18 +52,26 @@ def set_light(l, v, send=False):
 def update_lights():
     global lights
     global client
-    global server
+    global light_update
+
+    msg = rtmidi.MidiMessage.noteOn(1, 51, 127)
+    mymidi.midiout().sendMessage(msg)
     client.send_message("/new", "light")
     client.send_message("/dashboard/recordAllToSelected", [])
     client.send_message("/cue/selected/lightCommandText", [])
     client.send_message("/delete/selected", [])
+    while light_update == 0:
+        time.sleep(0.1)
+    light_update = 0
+    msg = rtmidi.MidiMessage.noteOn(1, 51, 0)
+    mymidi.midiout().sendMessage(msg)
     print(get_lights())
     print(lights)
 
 
 def osc_server():
     global server
-    
+
     server = ThreadingOSCUDPServer(("127.0.0.1", 53001), dispatcher)
     print("starting OSC server")
     server.serve_forever()
@@ -72,6 +86,4 @@ def init_lights():
     client = SimpleUDPClient("127.0.0.1", 53000)
 
     update_lights()
-
-    
-    
+    print(lights)

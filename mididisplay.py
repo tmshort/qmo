@@ -32,7 +32,7 @@ def setAssignment(text, raw=False):
     if len(text) == 0:
         return
     if raw == False:
-        text = translateTextTo7SD(text)
+        text = translateTextToMcu(text)
     else:
         text = bytes(text)
     if len(text) > 0:

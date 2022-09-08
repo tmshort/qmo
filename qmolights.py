@@ -7,7 +7,7 @@ from natsort import natsorted
 import threading
 import time
 import rtmidi
-import mymidi
+import qmomidi
 
 dispatcher = Dispatcher()
 server = None
@@ -64,7 +64,7 @@ def update_lights():
     global light_update
 
     msg = rtmidi.MidiMessage.noteOn(1, 51, 127)
-    mymidi.midiout().sendMessage(msg)
+    qmomidi.midiout().sendMessage(msg)
     client.send_message("/new", "light")
     client.send_message("/dashboard/recordAllToSelected", [])
     client.send_message("/cue/selected/lightCommandText", [])
@@ -75,7 +75,7 @@ def update_lights():
     client.send_message("/updates", 1)
     client.send_message("/cueLists", [])
     msg = rtmidi.MidiMessage.noteOn(1, 51, 0)
-    mymidi.midiout().sendMessage(msg)
+    qmomidi.midiout().sendMessage(msg)
     print(get_lights())
     print(lights)
 

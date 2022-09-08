@@ -1,5 +1,6 @@
 import rtmidi
-import mymidi
+import qmomidi
+
 # These set the text in the 7-segment-display area. |raw=True| means to use the
 # raw data to get odd characters, otherwise, text is translated as best
 # as I can
@@ -26,7 +27,7 @@ def translateTextToMcu(text):
 
 def doSevenSegment(position, value):
     msg = rtmidi.MidiMessage.controllerEvent(1, position, value)
-    mymidi.midiout().sendMessage(msg)
+    qmomidi.midiout().sendMessage(msg)
 
 def setAssignment(text, raw=False):
     if len(text) == 0:
@@ -130,7 +131,7 @@ def setLcdRaw(text, startpos=0):
 
     # Don't bother with xF7 terminator
     msg = rtmidi.MidiMessage.createSysExMessage(bytes(command))
-    mymidi.midiout().sendMessage(msg)
+    qmomidi.midiout().sendMessage(msg)
 
 # Sets the text over the whole LCD display, starting at |row, column|
 # This is basically a broken out setLcdRaw()

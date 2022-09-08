@@ -19,7 +19,13 @@ light_update = 0
 def accept_anything(address: str, *osc_args: List[Any]) -> None:
     global lights
     global light_update
-    if address[-17:] == "/lightCommandText":
+    print(f"address={address}")
+    if address[:18] == "/update/workspace/":
+        if address[54:71] == "/cue_id/dashboard":
+            cmd = address[54:] + "/children/shallow"
+            print(f"cmd={cmd}")
+            client.send_message(cmd, [])
+    elif address[-17:] == "/lightCommandText":
         for i in osc_args:
             d = json.loads(i)
             d = d['data'].split('\n')
@@ -49,6 +55,9 @@ def set_light(l, v, send=False):
     if send:
         client.send_message("/dashboard/setLight", [l, v])
 
+def send_message(msg, args):
+    client.send_message(msg, args)
+
 def update_lights():
     global lights
     global client
@@ -63,6 +72,8 @@ def update_lights():
     while light_update == 0:
         time.sleep(0.1)
     light_update = 0
+    client.send_message("/updates", 1)
+    client.send_message("/cueLists", [])
     msg = rtmidi.MidiMessage.noteOn(1, 51, 0)
     mymidi.midiout().sendMessage(msg)
     print(get_lights())
